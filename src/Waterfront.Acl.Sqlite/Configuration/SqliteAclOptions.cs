@@ -1,4 +1,4 @@
-﻿namespace Waterfront.Acl.SQLite;
+﻿namespace Waterfront.Acl.Sqlite.Configuration;
 
 public class SqliteAclOptions
 {

@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Waterfront.Acl.Sqlite.Configuration;
 using Waterfront.Acl.SQLite.Models;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;

@@ -31,6 +31,7 @@ public class SqliteAclDbContext : DbContext
             modelBuilder.Entity<SqliteAclUser>()
                         .ToTable(_aclOptions.UsersTableName)
                         .HasKey(user => user.Username);
+            modelBuilder.Entity<SqliteAclUserPolicy>().ToTable("wf_acl_user_policies");
         }
 
         if ( _aclOptions.SupportsAuthorization )
@@ -38,6 +39,10 @@ public class SqliteAclDbContext : DbContext
             modelBuilder.Entity<SqliteAclPolicy>()
                         .ToTable(_aclOptions.AclTableName)
                         .HasKey(acl => acl.Name);
+
+            modelBuilder.Entity<SqliteAclPolicyAccessRule>().ToTable("wf_acl_policy_access_rules");
+            modelBuilder.Entity<SqliteAclPolicyAccessRuleAction>()
+                        .ToTable("wf_acl_policy_access_rule_actions");
         }
     }
 

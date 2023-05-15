@@ -1,45 +1,44 @@
-﻿using Microsoft.Data.Sqlite;
+﻿#pragma warning disable CS8618
+
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Waterfront.Acl.Sqlite.Configuration;
 using Waterfront.Acl.SQLite.Models;
 using Waterfront.Common.Acl;
-using Waterfront.Core.Utility.Parsing.Acl;
+using Waterfront.Core.Parsing.Acl;
 
 namespace Waterfront.Acl.SQLite;
 
 public class SqliteAclDbContext : DbContext
 {
-    private readonly IOptions<SqliteAclOptions> _options;
-
+    private readonly SqliteAclOptions _aclOptions;
     public DbSet<SqliteAclUser> Users { get; set; }
     public DbSet<SqliteAclPolicy> Acl { get; set; }
 
-    public SqliteAclDbContext(IOptions<SqliteAclOptions> options)
+    public SqliteAclDbContext(
+        DbContextOptions<SqliteAclDbContext> options,
+        SqliteAclOptions aclOptions
+    ) : base(options)
     {
-        _options = options;
+        _aclOptions = aclOptions;
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        var usersTableName = _options.Value.GetUsersTableName();
-        var aclTableName   = _options.Value.GetAclTableName();
+        if ( _aclOptions.SupportsAuthentication )
+        {
+            modelBuilder.Entity<SqliteAclUser>()
+                        .ToTable(_aclOptions.UsersTableName)
+                        .HasKey(user => user.Username);
+        }
 
-        modelBuilder.Entity<SqliteAclUser>().ToTable(usersTableName);
-        modelBuilder.Entity<SqliteAclPolicy>().ToTable(aclTableName);
-
-        modelBuilder.Entity<SqliteAclUser>().HasKey(user => user.Username);
-        modelBuilder.Entity<SqliteAclPolicy>().HasKey(policy => policy.Name);
-    }
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        // var dataSource     = _options.Value.DataSource!;
-        var dataSource = "auth.db";
-        optionsBuilder.UseSqlite(
-            new SqliteConnectionStringBuilder { DataSource = dataSource }.ConnectionString,
-            opt => opt.MigrationsAssembly("Waterfront.Server")
-        );
+        if ( _aclOptions.SupportsAuthorization )
+        {
+            modelBuilder.Entity<SqliteAclPolicy>()
+                        .ToTable(_aclOptions.AclTableName)
+                        .HasKey(acl => acl.Name);
+        }
     }
 
     public async ValueTask<AclUser> ConvertToAclUserAsync(SqliteAclUser sqliteAclUser)

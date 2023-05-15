@@ -1,13 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.Data;
+using System.Reflection;
+using Microsoft.Data.Sqlite;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Waterfront.Acl.Sqlite.Configuration;
 using Waterfront.Acl.SQLite.Models;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
-using Waterfront.Common.Tokens;
+using Waterfront.Common.Tokens.Requests;
 using Waterfront.Core.Authorization;
-using Waterfront.Core.Utility.Serialization.Acl;
+using Waterfront.Core.Serialization.Acl;
 
 namespace Waterfront.Acl.SQLite;
 
@@ -15,13 +18,36 @@ public class SqliteAclAuthorizationService : AclAuthorizationServiceBase<SqliteA
 {
     private readonly SqliteAclDbContext _dbContext;
 
-    public SqliteAclAuthorizationService(
-        ILoggerFactory loggerFactory,
-        IOptions<SqliteAclOptions> options,
-        SqliteAclDbContext dbContext
-    ) : base(loggerFactory, options)
+    public SqliteAclAuthorizationService(ILoggerFactory loggerFactory, SqliteAclOptions options) :
+    base(loggerFactory, options)
     {
-        _dbContext = dbContext;
+        if ( !Options.SupportsAuthorization )
+        {
+            throw new InvalidOperationException(
+                $"Given {nameof(SqliteAclOptions)} instance does not support authorization"
+            );
+        }
+
+        _dbContext = new SqliteAclDbContext(
+            new DbContextOptionsBuilder<SqliteAclDbContext>().UseSqlite(
+                                                                 new SqliteConnectionStringBuilder {
+                                                                     DataSource =
+                                                                     Options.AclDataSource
+                                                                 }
+                                                                 .ConnectionString,
+                                                                 sqlite => {
+                                                                     sqlite.MigrationsAssembly(
+                                                                         Assembly
+                                                                         .GetExecutingAssembly()
+                                                                         .GetName()
+                                                                         .Name
+                                                                     );
+                                                                 }
+                                                             )
+                                                             .UseSnakeCaseNamingConvention()
+                                                             .Options,
+            Options
+        );
     }
 
     public override async ValueTask<AclAuthorizationResult> AuthorizeAsync(
@@ -32,38 +58,65 @@ public class SqliteAclAuthorizationService : AclAuthorizationServiceBase<SqliteA
     {
         if ( !authnResult.IsSuccessful )
         {
-            throw new InvalidOperationException();
+            return new AclAuthorizationResult { ForbiddenScopes = request.Scopes };
         }
-        
-        IReadOnlyList<TokenRequestScope> remainingScopes  = authzResult.ForbiddenScopes;
-        List<TokenRequestScope>          authorizedScopes = new List<TokenRequestScope>();
 
-        IQueryable<SqliteAclPolicy> userPolicies =
-        _dbContext.Acl.Where(policy => authnResult.User.Acl.Contains(policy.Name));
+        var user = authnResult.User;
 
-        foreach ( TokenRequestScope scope in remainingScopes )
+        var result = new AclAuthorizationResult {
+            AuthorizedScopes = new List<TokenRequestScope>(),
+            ForbiddenScopes =
+            new List<TokenRequestScope>()
+        };
+
+        List<TokenRequestScope> authorizedScopes = new List<TokenRequestScope>();
+        List<TokenRequestScope> forbiddenScopes  = new List<TokenRequestScope>();
+
+        var policies = _dbContext.Acl
+                                 .Where(
+                                     p => user.Acl.Contains(
+                                         p.Name,
+                                         StringComparer.OrdinalIgnoreCase
+                                     )
+                                 )
+                                 .Include(p => p.Access)
+                                 .ThenInclude(a => a.Actions)
+                                 .ToArrayAsync();
+
+        var userPolicies = _dbContext.Acl.Where(
+            p => user.Acl.Contains(p.Name, StringComparer.OrdinalIgnoreCase)
+        );
+
+        foreach ( TokenRequestScope remainingScope in authzResult.ForbiddenScopes )
         {
-            string strType  = scope.Type.ToSerialized();
-            IQueryable<SqliteAclPolicyAccessRule> matchingAcl = userPolicies.SelectMany(acl => acl.Access)
-            .Where(
-                rule => rule.Type == strType &&
-                        EF.Functions.Glob(scope.Name, rule.Name)
-            );
+            var strScopeType = remainingScope.Type.ToSerialized();
 
-            IEnumerable<string> strActions = scope.Actions.Select(a => a.ToSerialized());
+            var matchingAcl = userPolicies.SelectMany(p => p.Access)
+                                          .Where(
+                                              rule => rule.Type == strScopeType &&
+                                                      EF.Functions.Glob(
+                                                          remainingScope.Name,
+                                                          rule.Name
+                                                      )
+                                          );
 
-            bool authorized = await matchingAcl.AnyAsync(
-                                  rule => rule.Actions.Any(action => action.Value == "*") ||
-                                          strActions.All(
-                                              act => rule.Actions.All(act2 => act2.Value == act)
-                                          )
-                              );
-            if ( authorized )
+            var strScopeActions = remainingScope.Actions.Select(x => x.ToSerialized());
+
+            bool isAuthorized = await matchingAcl.AnyAsync(
+                                    x => x.Actions.Any(y => y.Value == "*") ||
+                                         strScopeActions.All(z => x.Actions.Any(r => r.Value == z))
+                                );
+
+            if ( isAuthorized )
             {
-                authorizedScopes.Add(scope);
+                result.AuthorizedScopes.Add(remainingScope);
+            }
+            else
+            {
+                result.ForbiddenScopes.Add(remainingScope);
             }
         }
 
-        return new AclAuthorizationResult { AuthorizedScopes = authorizedScopes };
+        return result;
     }
 }

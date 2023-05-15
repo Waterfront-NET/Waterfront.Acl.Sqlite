@@ -1,4 +1,6 @@
-﻿namespace Waterfront.Acl.Sqlite.Configuration;
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace Waterfront.Acl.Sqlite.Configuration;
 
 public class SqliteAclOptions
 {
@@ -6,42 +8,17 @@ public class SqliteAclOptions
     public SqliteAclSourceOptions? Users { get; set; }
     public SqliteAclSourceOptions? Acl { get; set; }
 
-    public string GetUsersDataSource()
-    {
-        if ( !string.IsNullOrEmpty(Users?.DataSource) )
-        {
-            return Users.DataSource;
-        }
+    [MemberNotNullWhen(true, nameof(UsersDataSource))]
+    public bool SupportsAuthentication =>
+    !string.IsNullOrEmpty(DataSource) || !string.IsNullOrEmpty(Users?.DataSource);
 
-        if ( !string.IsNullOrEmpty(DataSource) )
-            return DataSource;
+    [MemberNotNullWhen(true, nameof(AclDataSource))]
+    public bool SupportsAuthorization =>
+    !string.IsNullOrEmpty(DataSource) || !string.IsNullOrEmpty(Acl?.DataSource);
 
-        throw new Exception();
-    }
+    public string? UsersDataSource => Users?.DataSource ?? DataSource;
+    public string? AclDataSource => Acl?.DataSource ?? DataSource;
 
-    public string GetUsersTableName()
-    {
-        if ( !string.IsNullOrEmpty(Users?.TableName) )
-            return Users.TableName;
-        return "waterfront_acl_users";
-    }
-
-    public string GetAclDataSource()
-    {
-        if ( !string.IsNullOrEmpty(Acl?.DataSource) )
-            return Acl.DataSource;
-
-        if ( !string.IsNullOrEmpty(DataSource) )
-            return DataSource;
-
-        throw new Exception();
-    }
-
-    public string GetAclTableName()
-    {
-        if ( !string.IsNullOrEmpty(Acl?.TableName) )
-            return Acl.TableName;
-
-        return "waterfront_acl_policies";
-    }
+    public string UsersTableName => Users?.TableName ?? "wf_users";
+    public string AclTableName => Acl?.TableName ?? "wf_acl";
 }

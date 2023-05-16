@@ -1,0 +1,43 @@
+on:
+  push:
+    branches:
+      - develop
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v3
+      - run: ./build.sh --target build --configuration Release
+      - run: ./build.sh --target pack --configuration Release --no-build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: libraries
+          path: artifacts/lib/*.zip
+      - uses: actions/upload-artifact@v3
+        with:
+          name: packages
+          path: |
+            artifacts/pkg/*.nupkg
+            artifacts/pkg/*.snupkg
+  push:
+    runs-on: ubuntu-latest
+    needs: [build]
+    permissions: { packages: write }
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-dotnet@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: packages
+          path: artifacts/pkg
+      - run: ./build.sh --target artifacts/push/nuget
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
+      - run: ./build.sh --target artifacts/push/github
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

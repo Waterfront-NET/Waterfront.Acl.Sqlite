@@ -47,4 +47,4 @@ Task("artifacts/push/github")
     Source = "nuget.pkg.github.com",
     ApiKey = apikeys.Github
   });
-})
+});

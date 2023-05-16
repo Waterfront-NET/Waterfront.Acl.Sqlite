@@ -1,16 +1,16 @@
-﻿using Microsoft.Data.Sqlite;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Waterfront.Acl.Sqlite.Authentication;
+using Waterfront.Acl.Sqlite.Authorization;
 using Waterfront.Acl.Sqlite.Configuration;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
 using Waterfront.Extensions.DependencyInjection;
 
-namespace Waterfront.Acl.SQLite;
+namespace Waterfront.Acl.Sqlite.Extensions;
 
-public static class SqliteAclExtensions
+public static class WaterfrontBuilderExtensions
 {
     public static IWaterfrontBuilder AddSqliteAuthentication(
         this IWaterfrontBuilder builder,

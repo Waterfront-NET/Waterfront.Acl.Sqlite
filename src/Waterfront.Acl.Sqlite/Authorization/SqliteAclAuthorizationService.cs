@@ -1,18 +1,16 @@
-﻿using System.Data;
-using System.Reflection;
+﻿using System.Reflection;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Waterfront.Acl.Sqlite.Configuration;
-using Waterfront.Acl.SQLite.Models;
+using Waterfront.Acl.Sqlite.Models;
 using Waterfront.Common.Authentication;
 using Waterfront.Common.Authorization;
 using Waterfront.Common.Tokens.Requests;
 using Waterfront.Core.Authorization;
 using Waterfront.Core.Serialization.Acl;
 
-namespace Waterfront.Acl.SQLite;
+namespace Waterfront.Acl.Sqlite.Authorization;
 
 public class SqliteAclAuthorizationService : AclAuthorizationServiceBase<SqliteAclOptions>
 {

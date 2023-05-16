@@ -3,10 +3,10 @@ using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Options;
 using Waterfront.Acl.Sqlite.Configuration;
+using Waterfront.Acl.Sqlite.Models;
 
-namespace Waterfront.Acl.SQLite.Factories;
+namespace Waterfront.Acl.Sqlite.Factories;
 
 public class SqliteAclDesignTimeDbContextFactory : IDesignTimeDbContextFactory<SqliteAclDbContext>
 {

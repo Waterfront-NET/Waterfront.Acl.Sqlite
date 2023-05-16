@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Waterfront.Acl.SQLite.Models;
+﻿namespace Waterfront.Acl.Sqlite.Models;
 
 public class SqliteAclPolicy
 {

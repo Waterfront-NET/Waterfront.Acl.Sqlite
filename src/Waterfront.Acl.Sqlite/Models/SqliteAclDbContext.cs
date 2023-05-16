@@ -2,11 +2,10 @@
 
 using Microsoft.EntityFrameworkCore;
 using Waterfront.Acl.Sqlite.Configuration;
-using Waterfront.Acl.SQLite.Models;
 using Waterfront.Common.Acl;
 using Waterfront.Core.Parsing.Acl;
 
-namespace Waterfront.Acl.SQLite;
+namespace Waterfront.Acl.Sqlite.Models;
 
 public class SqliteAclDbContext : DbContext
 {

@@ -1,4 +1,4 @@
-﻿namespace Waterfront.Acl.SQLite.Models;
+﻿namespace Waterfront.Acl.Sqlite.Models;
 
 public class SqliteAclPolicyAccessRule
 {

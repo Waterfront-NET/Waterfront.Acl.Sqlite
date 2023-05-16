@@ -12,33 +12,27 @@ public class SqliteAclDesignTimeDbContextFactory : IDesignTimeDbContextFactory<S
 {
     public SqliteAclDbContext CreateDbContext(string[] args)
     {
-        var configurationBuilder =
-        new ConfigurationBuilder().AddEnvironmentVariables("WF_ACL_SQLITE_");
+        IConfigurationRoot configuration = new ConfigurationBuilder().AddEnvironmentVariables("WF_ACL_SQLITE_").Build();
 
-        var configuration = configurationBuilder.Build();
-
-        var options = new SqliteAclOptions();
+        SqliteAclOptions options = new SqliteAclOptions();
 
         configuration.Bind(options);
 
-        if ( string.IsNullOrEmpty(options.DataSource) )
+        if (string.IsNullOrEmpty(options.DataSource))
         {
             throw new Exception("DataSource not defined");
         }
 
-        var dbContext = new SqliteAclDbContext(
+        SqliteAclDbContext dbContext = new SqliteAclDbContext(
             new DbContextOptionsBuilder<SqliteAclDbContext>().UseSnakeCaseNamingConvention()
                                                              .UseSqlite(
                                                                  new SqliteConnectionStringBuilder {
                                                                      DataSource = options.DataSource
-                                                                 }
-                                                                 .ConnectionString,
-                                                                 sqlite => {
+                                                                 }.ConnectionString,
+                                                                 sqlite =>
+                                                                 {
                                                                      sqlite.MigrationsAssembly(
-                                                                         Assembly
-                                                                         .GetExecutingAssembly()
-                                                                         .GetName()
-                                                                         .Name
+                                                                         Assembly.GetExecutingAssembly().GetName().Name
                                                                      );
                                                                  }
                                                              )

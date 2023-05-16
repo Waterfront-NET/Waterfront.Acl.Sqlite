@@ -1,8 +1,6 @@
 ﻿#pragma warning disable CS8618
 
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
 using Waterfront.Acl.Sqlite.Configuration;
 using Waterfront.Acl.SQLite.Models;
 using Waterfront.Common.Acl;

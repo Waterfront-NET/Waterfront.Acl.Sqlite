@@ -7,6 +7,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{B3D245AD-EAA
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waterfront.Acl.Sqlite", "src\Waterfront.Acl.Sqlite\Waterfront.Acl.Sqlite.csproj", "{FCA05DF0-F7CC-4891-AB87-D46313D80602}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Waterfront.Acl.Sqlite.Extensions.DependencyInjection", "src\Waterfront.Acl.Sqlite.Extensions.DependencyInjection\Waterfront.Acl.Sqlite.Extensions.DependencyInjection.csproj", "{52BF12A9-8833-4F7F-B565-F906FBE07806}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -20,8 +22,13 @@ Global
 		{FCA05DF0-F7CC-4891-AB87-D46313D80602}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FCA05DF0-F7CC-4891-AB87-D46313D80602}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FCA05DF0-F7CC-4891-AB87-D46313D80602}.Release|Any CPU.Build.0 = Release|Any CPU
+		{52BF12A9-8833-4F7F-B565-F906FBE07806}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{52BF12A9-8833-4F7F-B565-F906FBE07806}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{52BF12A9-8833-4F7F-B565-F906FBE07806}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{52BF12A9-8833-4F7F-B565-F906FBE07806}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{FCA05DF0-F7CC-4891-AB87-D46313D80602} = {B3D245AD-EAAC-4271-A9FE-3A900FA76197}
+		{52BF12A9-8833-4F7F-B565-F906FBE07806} = {B3D245AD-EAAC-4271-A9FE-3A900FA76197}
 	EndGlobalSection
 EndGlobal
